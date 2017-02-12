@@ -14,9 +14,7 @@ const data = fs.readFileSync('public/index.html')
 
 app.use(function * (next) {
 	yield next
-	//console.log(JSON.stringify(this))
-	if (this.url.split('.').pop() !== 'js') {
-		console.log('index.html written')
+	if (this.url.split('.').length === 1) {
 		this.body = data.toString()
 	}
 })
