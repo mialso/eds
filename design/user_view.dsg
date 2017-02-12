@@ -1,0 +1,14 @@
+when guest opens application
+	it should see
+		top menu
+		description content
+
+	it should be able to
+		log in
+		see information about application purpose and usage
+
+when user opens application
+	it should see
+		user menu
+		projects list
+		classes list
