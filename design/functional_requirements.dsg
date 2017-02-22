@@ -1,0 +1,8 @@
+program should provide two types of game creation:
+	educational game:
+		ability to choose which kind of blocks to use during programming(task solving)
+		ability to control blocks used and operations performed
+		ability to see all class students progress during session
+		ability to temporary disable other projects search and execution, with except to attached to session
+
+in addition to scratch mit program should provide network communication opportunity to create multiplayer games and exchange information with different users
