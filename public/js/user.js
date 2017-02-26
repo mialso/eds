@@ -31,6 +31,7 @@
 			value: new glob.app.Atom('userRole', 'string'),
 		})
 	}
+
 	User.prototype.login = function() {
 		const localUser = glob.app.storage.getItem('user')
 		if (localUser === null) {

@@ -14,6 +14,16 @@
 		writable: false,
 		value: glob.localStorage,
 	})
+	// app user event creator
+	const actions = {
+	}
+	app.action = function (event, actionName) {
+		console.log(`app action: ${actionName}`)
+		actions[actionName](event)
+	}
+	app.registerAction = function (name, action) {
+		actions[name] = action
+	}
 	glob.addEventListener('load', () => {
 		glob.app.user.login()
 	})

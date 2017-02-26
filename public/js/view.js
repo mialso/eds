@@ -30,7 +30,15 @@
 
 	// subsribe to user changes
 	glob.app.user.role.watch((newRole) => {
-		console.log(`new user role: ${newRole}`)
+		switch (newRole) {
+			case 'guest':
+				glob.app.view.name.value = 'main'; return
+			case 'teacher':
+			case 'student':
+				glob.app.view.name.value = 'main'; return
+			default:
+				return
+		}
 	})
 
 })(window, '<view>');

@@ -2,7 +2,7 @@
 	'use strict'
 
 	// check if global app is ready to use
-	if (!glob.app || typeof glob.app !== 'object') {
+	if (!glob || !glob.app || typeof glob.app !== 'object') {
 		throw new Error(`${mName}: global [app] is not defined or wrong type`)
 	}
 
@@ -48,9 +48,9 @@
 			get: function() { return data },
 			set: function(newData) { 
 				if (typeof newData !== this.type && newData !== null) {
-					throw new Error(`${mName}: value of type ${typeof newData} is not supported`)
+					throw new Error(`${mName}: value of type ${typeof newData} is not supported by this atom`)
 				}
-				if (newData === this.data) return
+				if (newData === data) return
 				data = newData
 				console.log(`atomValueSetter: ${this.key}|${newData}`)
 				keys[this.key] = newData
