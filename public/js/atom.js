@@ -6,6 +6,8 @@
 		throw new Error(`${mName}: global [app] is not defined or wrong type`)
 	}
 
+	const keys = {}
+
 	function Atom (key, valueType) {
 		'use strict'
 		// check to be called with 'new' keyword
@@ -50,6 +52,8 @@
 				}
 				if (newData === this.data) return
 				data = newData
+				console.log(`atomValueSetter: ${this.key}|${newData}`)
+				keys[this.key] = newData
 				subscribers.forEach(handler => {
 					handler(data)
 				})
@@ -66,6 +70,7 @@
 				if (typeof watcher !== 'function') {
 					throw new Error(`${mName}: watch(): argument is not a 'function'`)
 				}
+				console.log(`watcherAdd: ${this.key}|${subscribers.length}`)
 				subscribers.push(watcher)
 			}
 		})
@@ -81,5 +86,9 @@
 	if (glob.app.Atom !== Atom) {
 		throw new Error(`${mName}: unable to initialize property on global [app] object`)
 	}
+
+	Object.defineProperty(glob.app, 'atoms', {
+		get() { return JSON.stringify(keys) },
+	})
 
 })(window, '<atom>');

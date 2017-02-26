@@ -7,4 +7,14 @@
 		writable: false,
 		value: {},
 	})
+	// encapsulate storage TODO refactor to module
+	Object.defineProperty(glob.app, 'storage', {
+		enumerable: false,
+		configurable: false,
+		writable: false,
+		value: glob.localStorage,
+	})
+	glob.addEventListener('load', () => {
+		glob.app.user.login()
+	})
 })(window);
