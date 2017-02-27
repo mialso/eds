@@ -25,6 +25,6 @@
 		actions[name] = action
 	}
 	glob.addEventListener('load', () => {
-		glob.app.user.login()
+		glob.app.user.updateUser()
 	})
 })(window);

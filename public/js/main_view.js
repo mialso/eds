@@ -9,11 +9,11 @@
 		menu: {
 			clazz: 'menu',
 			children: {
-				login: {
+				logout: {
 					type: 'button',
 					action: {
-						name: "menu_login_button_click",
-						func: (event) => { console.log('mainView menu login action') },
+						name: "menu_logout_button_click",
+						func: event => glob.app.user.logout(),
 					},
 					content: 'Log out',
 				},
@@ -25,12 +25,12 @@
 			clazz: 'main',
 			children: {},
 			attrs: {},
-			content: 'this is main content'
+			content: '',
 		},
 		footer: {
 		}
 	}
-	const login_button = viewModel.menu.children.login
+	const logout_button = viewModel.menu.children.logout
 
 	glob.app.view.name.watch((newView) => {
 		if ('main' === newView) {
@@ -38,17 +38,17 @@
 				`
 					<div class="${viewModel.menu.clazz}">
 						<p style="display: inline;">Hello, ${glob.app.user.name.value}</p>
-						<button style="position: absolute; right: 0" onclick='app.action(event, "${login_button.action.name}")'>
-							${login_button.content}
+						<button style="position: absolute; right: 0" onclick='app.action(event, "${logout_button.action.name}")'>
+							${logout_button.content}
 						</button>
 					</div>
 					<div class='${viewModel.main.clazz}'>
-						<p>${viewModel.main.content}</p>
+						<p>this is main ${glob.app.user.role.value} content</p>
 					</div>
 				`
 			return
 		}
 	})
 
-	app.registerAction(login_button.action.name, login_button.action.func)
+	app.registerAction(logout_button.action.name, logout_button.action.func)
 })(window, '<main_view>');

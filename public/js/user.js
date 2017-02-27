@@ -32,7 +32,17 @@
 		})
 	}
 
-	User.prototype.login = function() {
+	User.prototype.login = function(token) {
+		glob.app.storage.setItem('user', token)
+		this.updateUser()
+	}
+	User.prototype.logout = function() {
+		console.log('logout')
+		glob.app.storage.removeItem('user')
+		this.name.value = null
+		this.role.value = 'guest'
+	}
+	User.prototype.updateUser = function () {
 		const localUser = glob.app.storage.getItem('user')
 		if (localUser === null) {
 			this.name.value = 'guest'; this.role.value = 'guest'; return
@@ -50,6 +60,7 @@
 	if (!(glob.app.user instanceof User)) {
 		throw new Error(`${mName}: unable to initialise user`)
 	}
+
 
 	// stub for server request
 	function serverLogin (userToken) {

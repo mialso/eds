@@ -1,3 +1,25 @@
+.html {
+}
+.body {
+}
 .menu {
 	position: relative;
+}
+.modal {
+	position: fixed;
+	background-color: rgba(100, 100, 100, 0.3);
+	width: 100%;
+	display: none;
+	top: 0;
+	bottom: 0;
+}
+.modal.in {
+	display: block
+}
+.loginForm {
+	background-color: white;
+	position: relative;
+	top: 100px;
+	margin: 20px;
+	padding: 20px;
 }

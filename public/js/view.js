@@ -32,7 +32,7 @@
 	glob.app.user.role.watch((newRole) => {
 		switch (newRole) {
 			case 'guest':
-				glob.app.view.name.value = 'main'; return
+				glob.app.view.name.value = 'login'; return
 			case 'teacher':
 			case 'student':
 				glob.app.view.name.value = 'main'; return
