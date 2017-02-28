@@ -30,10 +30,16 @@
 			writable: false,
 			value: new glob.app.Atom('userRole', 'string'),
 		})
+		Object.defineProperty(this, 'loginToken', {
+			enumerable: false,
+			configurable: false,
+			writable: false,
+			value: new glob.app.Atom('userLoginToken', 'string')
+		})
 	}
 
-	User.prototype.login = function(token) {
-		glob.app.storage.setItem('user', token)
+	User.prototype.login = function() {
+		glob.app.storage.setItem('user', this.userLoginToken.value)
 		this.updateUser()
 	}
 	User.prototype.logout = function() {
@@ -43,6 +49,12 @@
 		this.role.value = 'guest'
 	}
 	User.prototype.updateUser = function () {
+		// TODO watcher double initialization
+		if (this.name.value === null) {
+			glob.app.watchData('userToken', validateToken)
+			// glob.app.registerAction('userLoginTokenValid')
+		}
+
 		const localUser = glob.app.storage.getItem('user')
 		if (localUser === null) {
 			this.name.value = 'guest'; this.role.value = 'guest'; return
@@ -61,7 +73,12 @@
 		throw new Error(`${mName}: unable to initialise user`)
 	}
 
-
+	function validateToken (userToken) {
+		if (typeof userToken === 'string' && userToken.length > 2) {
+			glob.app.action(null, 'userLoginTokenValid')
+			return
+		}
+	}
 	// stub for server request
 	function serverLogin (userToken) {
 		switch (userToken) {

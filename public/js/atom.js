@@ -70,8 +70,8 @@
 				if (typeof watcher !== 'function') {
 					throw new Error(`${mName}: watch(): argument is not a 'function'`)
 				}
-				console.log(`watcherAdd: ${this.key}|${subscribers.length}`)
 				subscribers.push(watcher)
+				console.log(`watcherAdd: ${this.key}|${subscribers.length}`)
 			}
 		})
 	}

@@ -1,4 +1,4 @@
-;(function(glob) {
+;(function(glob, mName) {
 	'use strict'
 	if (glob.app) throw new Error('<app>: global [app] is already defined')
 	Object.defineProperty(glob, 'app', {
@@ -14,17 +14,49 @@
 		writable: false,
 		value: glob.localStorage,
 	})
+
 	// app user event creator
 	const actions = {
 	}
+	const data = {
+	}
+	const app = glob.app
 	app.action = function (event, actionName) {
 		console.log(`app action: ${actionName}`)
-		actions[actionName](event)
+		actions[actionName].value = Date.now()
+		const model = actionName.split('_')[0]
+		if (data[model] !== undefined) {
+			data[model].value = event.target.value
+		}
 	}
-	app.registerAction = function (name, action) {
-		actions[name] = action
+	app.registerAction = function (name, action, payload) {
+		console.log(`register action: ${name}`)
+		if (actions[name] !== undefined) {
+			throw new Error(`${mName}: registerAction(): invalid action '${name}': name allready taken`)
+		}
+		if (payload) {
+			const atomName = name.split('_')[0]
+			data[atomName] = new app.Atom(atomName, 'string')
+		}
+		actions[name] = new app.Atom(name, 'number')
+		if (action) actions[name].watch(action)
+	}
+	app.watchData = function (name, watcher) {
+		if (data[name] === undefined) {
+			throw new Error(`${mName}: watchData(): invalid name '${name}': no such data`)
+		}
+		data[name].watch(watcher)
+	}
+	app.watchAction = function (name, watcher) {
+		if (actions[name] === undefined) {
+			throw new Error(`${mName}: watchAction(): invalid name '${name}': no such action`)
+		}
+		actions[name].watch(watcher)
+	}
+	app.actions = function() {
+		console.log(Object.keys(actions))
 	}
 	glob.addEventListener('load', () => {
 		glob.app.user.updateUser()
 	})
-})(window);
+})(window, '<app>');

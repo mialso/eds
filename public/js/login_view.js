@@ -15,7 +15,7 @@
 				login: {
 					type: 'button',
 					action: {
-						name: "menu_login_button_click",
+						name: "loginForm_show",
 						func: (event) => {
 							console.log('menu login action')
 							document.querySelector('.modal').classList.add('in')
@@ -38,25 +38,31 @@
 		loginForm: {
 			clazz: 'loginForm',
 			action: {
+				showSignin: {
+					name: "userLoginTokenValid",
+					func: () => {
+						document.querySelector('.signInButton').disabled = false
+					}
+				},
 				signin: {
-					name: "login_form_sign_in",
+					name: "userAuth_change",
 					func: (event) => {
 						console.log('login form signin button click')
-						app.user.login(tmp.userToken)
+						// app.user.login(tmp.userToken)
 					},
 				},
 				cancel: {
-					name: "login_form_cancel",
+					name: "loginForm_hide",
 					func: (event) => {
 						console.log('login form cancel')
 						document.querySelector('.modal').classList.remove('in')
 					},
 				},
 				inputChange: {
-					name: "login_form_input_change",
+					name: "userToken_input_change",
 					func: (event) => {
 						console.log('login form input change')
-						tmp.userToken = event.target.value
+						// tmp.userToken = event.target.value
 					},
 				},
 			},
@@ -65,7 +71,7 @@
 			content: ''
 		},
 	}
-	const login_button = viewModel.menu.children.login
+	const loginButton = viewModel.menu.children.login
 	const loginForm = viewModel.loginForm
 
 	glob.app.view.name.watch((newView) => {
@@ -74,8 +80,8 @@
 				`
 					<div class="${viewModel.menu.clazz}">
 						<p style="display: inline;">Hello, guest</p>
-						<button style="position: absolute; right: 0" onclick='app.action(event, "${login_button.action.name}")'>
-							${login_button.content}
+						<button style="position: absolute; right: 0" onclick='app.action(event, "${loginButton.action.name}")'>
+							${loginButton.content}
 						</button>
 					</div>
 					<div class='${viewModel.main.clazz}'>
@@ -86,7 +92,7 @@
 							<div>
 								<label>Token</label><input type="text" onchange='app.action(event, "${loginForm.action.inputChange.name}")'/>
 							</div>
-							<button type="button" onclick='app.action(event, "${loginForm.action.signin.name}")'>Sign in</button>
+							<button class='signInButton' disabled type="button" onclick='app.action(event, "${loginForm.action.signin.name}")'>Sign in</button>
 							<button type="button" onclick='app.action(event, "${loginForm.action.cancel.name}")'>Cancel</button>
 						</div>
 					</div>
@@ -95,8 +101,9 @@
 		}
 	})
 
-	app.registerAction(login_button.action.name, login_button.action.func)
+	app.registerAction('userLoginTokenValid', loginForm.action.showSignin.func)
+	app.registerAction(loginButton.action.name, loginButton.action.func)
 	app.registerAction(loginForm.action.signin.name, loginForm.action.signin.func)
 	app.registerAction(loginForm.action.cancel.name, loginForm.action.cancel.func)
-	app.registerAction(loginForm.action.inputChange.name, loginForm.action.inputChange.func)
+	app.registerAction(loginForm.action.inputChange.name, loginForm.action.inputChange.func, true)
 })(window, '<main_view>');
