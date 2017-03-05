@@ -4,9 +4,6 @@
 	if (!glob.app || typeof glob.app !== 'object') {
 		throw new Error(`${mName}: global [app] is not defined or wrong type`)
 	}
-	const tmp = {
-		userToken: ''
-	}
 
 	const viewModel = {
 		menu: {
@@ -45,10 +42,9 @@
 					}
 				},
 				signin: {
-					name: "userAuth_change",
+					name: "userLogin",
 					func: (event) => {
 						console.log('login form signin button click')
-						// app.user.login(tmp.userToken)
 					},
 				},
 				cancel: {
@@ -59,10 +55,15 @@
 					},
 				},
 				inputChange: {
-					name: "userToken_input_change",
+					name: "userLoginToken_input_change",
 					func: (event) => {
 						console.log('login form input change')
-						// tmp.userToken = event.target.value
+					},
+				},
+				inputInput: {
+					name: "userLoginInput_disableButton",
+					func: (event) => {
+						document.querySelector('.signInButton').disabled = true
 					},
 				},
 			},
@@ -90,7 +91,12 @@
 					<div class='modal'>
 						<div class='${loginForm.clazz}'>
 							<div>
-								<label>Token</label><input type="text" onchange='app.action(event, "${loginForm.action.inputChange.name}")'/>
+								<label>Token</label>
+								<input
+									type="text"
+									onchange='app.action(event, "${loginForm.action.inputChange.name}")'
+									oninput='app.action(event, "${loginForm.action.inputInput.name}")'
+								/>
 							</div>
 							<button class='signInButton' disabled type="button" onclick='app.action(event, "${loginForm.action.signin.name}")'>Sign in</button>
 							<button type="button" onclick='app.action(event, "${loginForm.action.cancel.name}")'>Cancel</button>
@@ -106,4 +112,5 @@
 	app.registerAction(loginForm.action.signin.name, loginForm.action.signin.func)
 	app.registerAction(loginForm.action.cancel.name, loginForm.action.cancel.func)
 	app.registerAction(loginForm.action.inputChange.name, loginForm.action.inputChange.func, true)
+	app.registerAction(loginForm.action.inputInput.name, loginForm.action.inputInput.func)
 })(window, '<main_view>');

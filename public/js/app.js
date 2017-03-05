@@ -25,7 +25,7 @@
 		console.log(`app action: ${actionName}`)
 		actions[actionName].value = Date.now()
 		const model = actionName.split('_')[0]
-		if (data[model] !== undefined) {
+		if (data[model] !== undefined && event.target.value !== undefined) {
 			data[model].value = event.target.value
 		}
 	}

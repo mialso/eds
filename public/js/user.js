@@ -10,6 +10,7 @@
 		throw new Error(`${mName}: <Atom> is not defined or wrong type`)
 	}
 
+	let initialized = false
 	function User () {
 		'use strict'
 		// check to be called with 'new' keyword
@@ -39,7 +40,10 @@
 	}
 
 	User.prototype.login = function() {
-		glob.app.storage.setItem('user', this.userLoginToken.value)
+		if (this.loginToken.value === null) {
+			throw new Error('empty user login')
+		}
+		glob.app.storage.setItem('user', this.loginToken.value)
 		this.updateUser()
 	}
 	User.prototype.logout = function() {
@@ -49,14 +53,16 @@
 		this.role.value = 'guest'
 	}
 	User.prototype.updateUser = function () {
-		// TODO watcher double initialization
-		if (this.name.value === null) {
-			glob.app.watchData('userToken', validateToken)
-			// glob.app.registerAction('userLoginTokenValid')
+		if (!initialized) {
+			glob.app.watchData('userLoginToken', validateToken)
+			glob.app.watchAction('userLogin', this.login.bind(this))
+			initialized = true
 		}
 
 		const localUser = glob.app.storage.getItem('user')
+		console.log(`updateUser: localUser=${localUser}`)
 		if (localUser === null) {
+			console.log('user is null')
 			this.name.value = 'guest'; this.role.value = 'guest'; return
 		}
 		const newUser = serverLogin(localUser)
@@ -75,12 +81,14 @@
 
 	function validateToken (userToken) {
 		if (typeof userToken === 'string' && userToken.length > 2) {
+			glob.app.user.loginToken.value = userToken
 			glob.app.action(null, 'userLoginTokenValid')
 			return
 		}
 	}
 	// stub for server request
 	function serverLogin (userToken) {
+		console.log(`server login: ${userToken}`)
 		switch (userToken) {
 			case 'some': return { name: 'Mik', role: 'teacher', token: 'some' }
 			case 'awesome': return { name: 'Jim', role: 'student', token: 'awesome' }
