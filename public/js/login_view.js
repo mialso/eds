@@ -4,31 +4,14 @@
 	if (!glob.app || typeof glob.app !== 'object') {
 		throw new Error(`${mName}: global [app] is not defined or wrong type`)
 	}
+	const app = glob.app
 
 	const viewModel = {
-		menu: {
-			clazz: 'menu',
-			children: {
-				login: {
-					type: 'button',
-					action: {
-						name: "loginForm_show",
-						func: (event) => {
-							console.log('menu login action')
-							document.querySelector('.modal').classList.add('in')
-						},
-					},
-					content: 'Log in',
-				},
-			},
-			attrs: {
-			},
-		},
 		main: {
 			clazz: 'main',
 			children: {},
 			attrs: {},
-			content: 'this is main guest content'
+			content: ''
 		},
 		footer: {
 		},
@@ -72,43 +55,33 @@
 			content: ''
 		},
 	}
-	const loginButton = viewModel.menu.children.login
 	const loginForm = viewModel.loginForm
 
-	glob.app.view.name.watch((newView) => {
-		if ('login' === newView) {
-			document.body.innerHTML = 
-				`
-					<div class="${viewModel.menu.clazz}">
-						<p style="display: inline;">Hello, guest</p>
-						<button style="position: absolute; right: 0" onclick='app.action(event, "${loginButton.action.name}")'>
-							${loginButton.content}
-						</button>
-					</div>
-					<div class='${viewModel.main.clazz}'>
-						<p>${viewModel.main.content}</p>
-					</div>
-					<div class='modal'>
-						<div class='${loginForm.clazz}'>
-							<div>
-								<label>Token</label>
-								<input
-									type="text"
-									onchange='app.action(event, "${loginForm.action.inputChange.name}")'
-									oninput='app.action(event, "${loginForm.action.inputInput.name}")'
-								/>
-							</div>
-							<button class='signInButton' disabled type="button" onclick='app.action(event, "${loginForm.action.signin.name}")'>Sign in</button>
-							<button type="button" onclick='app.action(event, "${loginForm.action.cancel.name}")'>Cancel</button>
+	app.view.menu.content.viewWatch((newMenuContent) => {
+		if (app.user.role.value !== 'guest') return
+		document.body.innerHTML = 
+			`
+				${newMenuContent}
+				<div class='${viewModel.main.clazz}'>
+					<p>login view: this is main ${app.user.role.value} content</p>
+				</div>
+				<div class='modal'>
+					<div class='${loginForm.clazz}'>
+						<div>
+							<label>Token</label>
+							<input
+								type="text"
+								onchange='app.action(event, "${loginForm.action.inputChange.name}")'
+								oninput='app.action(event, "${loginForm.action.inputInput.name}")'
+							/>
 						</div>
+						<button class='signInButton' disabled type="button" onclick='app.action(event, "${loginForm.action.signin.name}")'>Sign in</button>
+						<button type="button" onclick='app.action(event, "${loginForm.action.cancel.name}")'>Cancel</button>
 					</div>
-				`
-			return
-		}
+				</div>`
 	})
 
 	app.registerAction('userLoginTokenValid', loginForm.action.showSignin.func)
-	app.registerAction(loginButton.action.name, loginButton.action.func)
 	app.registerAction(loginForm.action.signin.name, loginForm.action.signin.func)
 	app.registerAction(loginForm.action.cancel.name, loginForm.action.cancel.func)
 	app.registerAction(loginForm.action.inputChange.name, loginForm.action.inputChange.func, true)

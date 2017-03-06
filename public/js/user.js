@@ -49,7 +49,7 @@
 	User.prototype.logout = function() {
 		console.log('logout')
 		glob.app.storage.removeItem('user')
-		this.name.value = null
+		this.name.value = 'guest'
 		this.role.value = 'guest'
 	}
 	User.prototype.updateUser = function () {

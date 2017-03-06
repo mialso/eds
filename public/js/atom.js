@@ -42,7 +42,9 @@
 		})
 
 		let data = null 
-		const subscribers = []
+		const viewSubscribers = []
+		const modelSubscribers = []
+		const actionSubscribers = []
 
 		Object.defineProperty(this, 'value', {
 			get: function() { return data },
@@ -54,7 +56,16 @@
 				data = newData
 				console.log(`atomValueSetter: ${this.key}|${newData}`)
 				keys[this.key] = newData
-				subscribers.forEach(handler => {
+				modelSubscribers.forEach(handler => {
+					// setTimeout(() => handler(data), 1000)
+					handler(data)
+				})
+				viewSubscribers.forEach(handler => {
+					// setTimeout(() => handler(data), 2000)
+					handler(data)
+				})
+				actionSubscribers.forEach(handler => {
+					// setTimeout(() => handler(data), 3000)
 					handler(data)
 				})
 			},
@@ -62,16 +73,42 @@
 			configurable: false,
 		})
 
-		Object.defineProperty(this, 'watch', {
+		Object.defineProperty(this, 'viewWatch', {
 			enumerable: false,
 			configurable: false,
 			writable: false,
 			value: watcher => {
 				if (typeof watcher !== 'function') {
-					throw new Error(`${mName}: watch(): argument is not a 'function'`)
+					throw new Error(`${mName}: viewWatch(): argument is not a 'function'`)
 				}
-				subscribers.push(watcher)
-				console.log(`watcherAdd: ${this.key}|${subscribers.length}`)
+				viewSubscribers.push(watcher)
+				console.log(`view watcherAdd: ${this.key}|${viewSubscribers.length}`)
+			}
+		})
+
+		Object.defineProperty(this, 'modelWatch', {
+			enumerable: false,
+			configurable: false,
+			writable: false,
+			value: watcher => {
+				if (typeof watcher !== 'function') {
+					throw new Error(`${mName}: modelWatch(): argument is not a 'function'`)
+				}
+				modelSubscribers.push(watcher)
+				console.log(`model watcherAdd: ${this.key}|${modelSubscribers.length}`)
+			}
+		})
+
+		Object.defineProperty(this, 'actionWatch', {
+			enumerable: false,
+			configurable: false,
+			writable: false,
+			value: watcher => {
+				if (typeof watcher !== 'function') {
+					throw new Error(`${mName}: actionWatch(): argument is not a 'function'`)
+				}
+				actionSubscribers.push(watcher)
+				console.log(`action watcherAdd: ${this.key}|${actionSubscribers.length}`)
 			}
 		})
 	}

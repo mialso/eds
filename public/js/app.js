@@ -39,19 +39,19 @@
 			data[atomName] = new app.Atom(atomName, 'string')
 		}
 		actions[name] = new app.Atom(name, 'number')
-		if (action) actions[name].watch(action)
+		if (action) actions[name].actionWatch(action)
 	}
 	app.watchData = function (name, watcher) {
 		if (data[name] === undefined) {
 			throw new Error(`${mName}: watchData(): invalid name '${name}': no such data`)
 		}
-		data[name].watch(watcher)
+		data[name].modelWatch(watcher)
 	}
 	app.watchAction = function (name, watcher) {
 		if (actions[name] === undefined) {
 			throw new Error(`${mName}: watchAction(): invalid name '${name}': no such action`)
 		}
-		actions[name].watch(watcher)
+		actions[name].actionWatch(watcher)
 	}
 	app.actions = function() {
 		console.log(Object.keys(actions))

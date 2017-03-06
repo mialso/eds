@@ -29,7 +29,7 @@
 	}
 
 	// subsribe to user changes
-	glob.app.user.role.watch((newRole) => {
+	glob.app.user.role.modelWatch((newRole) => {
 		switch (newRole) {
 			case 'guest':
 				glob.app.view.name.value = 'login'; return
