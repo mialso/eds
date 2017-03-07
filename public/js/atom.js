@@ -33,6 +33,10 @@
 		if (typeof key !== "string") {
 			throw new Error(`${mName}: Atom(): key argument should be a string`)
 		}
+		// check key uniqueness
+		if (Object.keys(keys).indexOf(key) !== -1) {
+			throw new Error(`${mName}: Atom(): key argument should be unique`)
+		}
 
 		Object.defineProperty(this, 'key', {
 			enumerable: false,
@@ -111,6 +115,7 @@
 				console.log(`action watcherAdd: ${this.key}|${actionSubscribers.length}`)
 			}
 		})
+		keys[this.key] = data
 	}
 
 	Object.defineProperty(glob.app, 'Atom', {
