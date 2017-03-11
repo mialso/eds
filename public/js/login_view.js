@@ -38,7 +38,7 @@
 					},
 				},
 				inputChange: {
-					name: "userLoginToken_input_change",
+					name: "userLoginTokenInput_change",
 					func: (event) => {
 						console.log('login form input change')
 					},

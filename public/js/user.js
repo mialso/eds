@@ -54,7 +54,7 @@
 	}
 	User.prototype.updateUser = function () {
 		if (!initialized) {
-			glob.app.watchData('userLoginToken', validateToken)
+			glob.app.watchData('userLoginTokenInput', validateToken)
 			glob.app.watchAction('userLogin', this.login.bind(this))
 			initialized = true
 		}

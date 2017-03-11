@@ -31,11 +31,11 @@
 		}
 		// check 'key' is a string
 		if (typeof key !== "string") {
-			throw new Error(`${mName}: Atom(): key argument should be a string`)
+			throw new Error(`${mName}: Atom(): key argument should be a string: ${typeof key}`)
 		}
 		// check key uniqueness
 		if (Object.keys(keys).indexOf(key) !== -1) {
-			throw new Error(`${mName}: Atom(): key argument should be unique`)
+			throw new Error(`${mName}: Atom(): key argument should be unique: ${key}`)
 		}
 
 		Object.defineProperty(this, 'key', {
@@ -46,6 +46,7 @@
 		})
 
 		let data = null 
+    const subscribers = []
 		const viewSubscribers = []
 		const modelSubscribers = []
 		const actionSubscribers = []
@@ -60,6 +61,9 @@
 				data = newData
 				console.log(`atomValueSetter: ${this.key}|${newData}`)
 				keys[this.key] = newData
+        subscribers.forEach(handler => {
+          handler(data)
+        })
 				modelSubscribers.forEach(handler => {
 					// setTimeout(() => handler(data), 1000)
 					handler(data)
@@ -75,6 +79,19 @@
 			},
 			enumerable: false,
 			configurable: false,
+		})
+
+		Object.defineProperty(this, 'watch', {
+			enumerable: false,
+			configurable: false,
+			writable: false,
+			value: watcher => {
+				if (typeof watcher !== 'function') {
+					throw new Error(`${mName}: watch(): argument is not a 'function'`)
+				}
+				subscribers.push(watcher)
+				console.log(`watcherAdd: ${this.key}|${subscribers.length}`)
+			}
 		})
 
 		Object.defineProperty(this, 'viewWatch', {
