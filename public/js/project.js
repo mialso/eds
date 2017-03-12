@@ -38,14 +38,16 @@
   app.user.name.watch((userName) => {
     // get projects avaliable for current user
     console.log(`PPPPPPPPPPP: ${userName}`)
-    app.project.data = projectsData[userName]
+    //app.project.data = projectsData[userName]
+    app.project.change(projectsData[userName])
     console.log(`PPPPPPPPPPP: ${app.project.data}`)
   })
 
   const actions = {
     add: [],
     remove: [],
-    update: [],
+    move: [],
+    change: [],
   }
 
   // model
@@ -63,13 +65,24 @@
         handler(projectId)
       })
     }
-    this.update = (updatedProjectData) => {
+    this.move = (updatedProjectData) => {
       console.log(`${mName}: update: ${updatedProjectData}`)
-      actions.update.forEach(handler => {
+      actions.move.forEach(handler => {
         handler(updatedProjectData)
       })
     }
-    this.watch = (watcher, action) => {
+    this.change = (newProjectData) => {
+      console.log(`${mName}: new: ${newProjectData}`)
+      if (!newProjectData) {
+        this.data = []
+      } else {
+        this.data = newProjectData
+      }
+      actions.change.forEach(handler => {
+        handler(this.data)
+      })
+    }
+    this.watch = (action, watcher) => {
       if (Object.keys(actions).indexOf(action) === -1) {
         throw new Error(`${mName}: watch(): unavailable action: ${action}`)
       }
@@ -81,35 +94,54 @@
   }
 
   // view, components
-  function ProjectListUser (parent, data) {
-    this.dataIds = projectsData[app.user.name] ? projectsData[app.user.name] : []
+  function ProjectListUser (parent) {
+    this.parent = parent
+    this.dataIds = []
     this.items = {
       htmlAr: []
     }
     this.noItems = '<div class="projectListUser">project list: no items to display<div>'
     this.ready = new app.Atom('project_projectListUser_ready', 'boolean')
+    this.init = function () {
+      // this.initChildren()
+      this.ready.value = true
+      this.parent.addItem({
+        id: `projectListUser_${app.user.name}`,
+        html: `
+          <div class="projectListUser">
+            ${this.items.htmlAr.length > 0 ? this.items.htmlAr.join('') : this.noItems}
+          </div>`
+      })
+    }
     parent.ready.watch((parentReady) => {
       if (parentReady) {
-        this.ready.value = true
-        parent.addItem({
-          id: `projectListUser_${app.user.name}`,
-          html: `
-            <div class="projectListUser">
-              ${this.items.htmlAr.length > 0 ? this.items.htmlAr.join('') : this.noItems}
-            </div>`
-        })
+        this.init()
       } else {
         this.ready.value = false
       }
     })
-    this.addItem = (item) => {
-      const index = dataIds.indexOf(item.id.split('_').pop())
-      htmlAr[index] = item.html
+    app.project.watch('change', (newData) => {
+      this.dataIds = newData
+      this.initChildren()
+    })
+    this.addItem = function (item) {
+      const index = this.dataIds.indexOf(item.id.split('_').pop())
+      this.items.htmlAr[index] = item.html
       console.log(`${mName}: ProjectListUser: add item: ${item.id} to index: ${index}`)
     }
-    this.dataIds.forEach((id) => {
-      this.items[id] = new ProjectListReadItem(this, id)
-    })
+    this.initChildren = function () {
+      // this.dataIds = app.project.data
+      if (!(this.dataIds && Array.isArray(this.dataIds))) {
+        throw new Error(`${mName}: initChildren(): no dataIds: ${this.dataIds}`)
+      }
+      this.dataIds.forEach((id) => {
+        this.items[id] = new ProjectListReadItem(this, id)
+      })
+    }
+    if (app.project.data.length > 0) {
+      this.dataIds = app.project.data
+      this.initChildren()
+    }
   }
   function ProjectListReadItem (parent, id) {
     parent.ready.watch(parentReady => {
@@ -119,10 +151,10 @@
           html: `
             <div class="projectListReadItem">
               <div>
-                ${app.projects.data[id].name}
+                ${projectsData.projects[id].name}
               </div>
               <div>
-                ${app.projects.data[id].description}
+                ${projectsData.projects[id].description}
               </div>
             </div>`
         })
