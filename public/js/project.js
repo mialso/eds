@@ -6,35 +6,8 @@
   let projectsData = {
     'Mik': ['firstM', 'secondM', 'thirdM'],
     'Jim': ['firstJ', 'secondJ', 'thirdJ'],
-    projects: {
-      'firstM': {
-        name: 'name one M',
-        description: 'desc one M',
-      },
-      'secondM': {
-        name: 'name two M',
-        description: 'desc two M',
-      },
-      'thirdM': {
-        name: 'name three M',
-        description: 'desc three M',
-      },
-      'firstJ': {
-        name: 'name one J',
-        description: 'desc one J',
-      },
-      'secondJ': {
-        name: 'name two J',
-        description: 'desc two J',
-      },
-      'thirdJ': {
-        name: 'name three J',
-        description: 'desc three J',
-      },
-    },
   }
-
-  // watchers
+  // watchers TODO app.user.store.watch({projectIds}, handler)
   app.user.name.watch((userName) => {
     // get projects avaliable for current user
     console.log(`PPPPPPPPPPP: ${userName}`)
@@ -52,7 +25,7 @@
 
   // model
   function Project () {
-    this.data = []  // the main question: to hold array of id's or whole data object
+    this.userProjects = []  // the main question: to hold array of id's or whole data object
     this.add = (newProject) => {
       console.log(`${mName}: add: ${newProject}`)
       actions.add.forEach(handler => {
@@ -74,12 +47,12 @@
     this.change = (newProjectData) => {
       console.log(`${mName}: new: ${newProjectData}`)
       if (!newProjectData) {
-        this.data = []
+        this.userProjects = []
       } else {
-        this.data = newProjectData
+        this.userProjects = newProjectData
       }
       actions.change.forEach(handler => {
-        handler(this.data)
+        handler(this.userProjects)
       })
     }
     this.watch = (action, watcher) => {
@@ -103,7 +76,6 @@
     this.noItems = '<div class="projectListUser">project list: no items to display<div>'
     this.ready = new app.Atom('project_projectListUser_ready', 'boolean')
     this.init = function () {
-      // this.initChildren()
       this.ready.value = true
       this.parent.addItem({
         id: `projectListUser_${app.user.name}`,
@@ -130,7 +102,6 @@
       console.log(`${mName}: ProjectListUser: add item: ${item.id} to index: ${index}`)
     }
     this.initChildren = function () {
-      // this.dataIds = app.project.data
       if (!(this.dataIds && Array.isArray(this.dataIds))) {
         throw new Error(`${mName}: initChildren(): no dataIds: ${this.dataIds}`)
       }
@@ -138,12 +109,22 @@
         this.items[id] = new ProjectListReadItem(this, id)
       })
     }
-    if (app.project.data.length > 0) {
-      this.dataIds = app.project.data
+    if (app.project.userProjects.length > 0) {
+      this.dataIds = app.project.userProjects
       this.initChildren()
     }
   }
   function ProjectListReadItem (parent, id) {
+    const item = {
+      name: app.project.store.get(id).name || '',
+      description: app.project.store.get(id).description || '',
+    }
+    this.updateData = function (project) {
+      console.log(`${mName}: ProjectListReadItem ${id}: updateData(): ${JSON.stringify(project)}`)
+      item.name = project.name
+      item.description = project.description
+    }
+    app.project.store.watch(Object.assign({id:id}, item), this.updateData)
     parent.ready.watch(parentReady => {
       if (parentReady) {
         parent.addItem({
@@ -151,10 +132,10 @@
           html: `
             <div class="projectListReadItem">
               <div>
-                ${projectsData.projects[id].name}
+                ${item.name}
               </div>
               <div>
-                ${projectsData.projects[id].description}
+                ${item.description}
               </div>
             </div>`
         })
