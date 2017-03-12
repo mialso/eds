@@ -4,7 +4,7 @@
   "description": "scratch education application",
   "main": "index.js",
   "scripts": {
-    "test": "nyc --all ava test/"
+    "test": "nyc --all tape 'test/*.tape.js' | faucet"
   },
   "nyc": {
     "include": [
@@ -24,7 +24,9 @@
   },
   "devDependencies": {
     "ava": "0.18.2",
+    "faucet": "0.0.1",
     "nyc": "10.1.2",
-    "sinon": "1.17.7"
+    "sinon": "1.17.7",
+    "tape": "4.6.3"
   }
 }
