@@ -59,4 +59,7 @@
 	glob.addEventListener('load', () => {
 		glob.app.user.updateUser()
 	})
+  glob.addEventListener('DOMContentLoaded', function(e) {
+    console.log('DOMContentLoaded')
+  })
 })(window, '<app>');

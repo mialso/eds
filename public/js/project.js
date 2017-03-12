@@ -97,6 +97,7 @@
       this.initChildren()
     })
     this.addItem = function (item) {
+      if (-1 === this.dataIds.indexOf(item.id.split('_').pop())) return
       const index = this.dataIds.indexOf(item.id.split('_').pop())
       this.items.htmlAr[index] = item.html
       console.log(`${mName}: ProjectListUser: add item: ${item.id} to index: ${index}`)
@@ -106,6 +107,7 @@
         throw new Error(`${mName}: initChildren(): no dataIds: ${this.dataIds}`)
       }
       this.dataIds.forEach((id) => {
+        if (this.items[id]) return
         this.items[id] = new ProjectListReadItem(this, id)
       })
     }

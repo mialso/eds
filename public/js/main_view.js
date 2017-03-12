@@ -35,7 +35,8 @@
       return
     }
     mainView.ready.value = true
-		document.body.innerHTML = 
+		glob.setTimeout(() => {
+      document.body.innerHTML = 
 			`
 				${newMenuContent}
 				<div class='${viewModel.main.clazz}'>
@@ -43,6 +44,18 @@
           ${mainView.html.projectListUser}
 				</div>
 			`
+    }, 0)
+    let attempts = 0
+    ;(function getMyEl() {
+      ++attempts
+      if (!document.querySelector('.main')) {
+        glob.requestAnimationFrame(getMyEl)
+      } else {
+        // TODO provide elements to each child
+        console.log('%o: %s', document.querySelector('.main'), attempts.toString())
+      }
+    })();
+
 	})
 
 })(window, '<main_view>');
