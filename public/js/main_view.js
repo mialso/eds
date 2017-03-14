@@ -18,12 +18,20 @@
 		}
 	}
   function MainView () {
-    this.html = {
-      projectListUser: '',
+    this.children = ['', 'projectListUser']
+    this.child = {
+      projectListUser: {
+        html: '',
+        domEl: null,
+        elWatcher: null,
+      },
+    }
+    this.watchEl = function(childId, handler) {
+      this.child[childId].elWatcher = handler
     }
     this.ready = new app.Atom('mainView_ready', 'boolean')
     this.addItem = (child) => {
-      this.html[child.id.split('_').shift()] = child.html
+      this.child[child.id.split('_').shift()].html = child.html
     }
   }
   const mainView = new MainView()
@@ -35,24 +43,36 @@
       return
     }
     mainView.ready.value = true
-		glob.setTimeout(() => {
-      document.body.innerHTML = 
+    document.body.innerHTML = 
 			`
 				${newMenuContent}
 				<div class='${viewModel.main.clazz}'>
 					<p>main view: this is main ${app.user.role.value} content</p>
-          ${mainView.html.projectListUser}
+          ${mainView.child[mainView.children[1]].html}
 				</div>
 			`
-    }, 0)
     let attempts = 0
     ;(function getMyEl() {
       ++attempts
-      if (!document.querySelector('.main')) {
+      const myDomEl = document.querySelector('.main')
+      if (!myDomEl) {
         glob.requestAnimationFrame(getMyEl)
       } else {
         // TODO provide elements to each child
-        console.log('%o: %s', document.querySelector('.main'), attempts.toString())
+        console.log('%o: %s', myDomEl, attempts.toString())
+        mainView.children.forEach((childName, index) => {
+          if (!(mainView.child[childName] && mainView.child[childName].html)) {
+            return
+          }
+          if (!mainView.child[childName].elWatcher) {
+            throw new Error(`${mName}: no watcher specified for ${childname} child`)
+          }
+          if (myDomEl.childElementCount <= index) {
+            throw new Error(`${mName}: child elements count is lower than current index: ${myDomEl.childElementCount},${index}`)
+          }
+          // invoke a watcher to provide element to child
+          mainView.child[childName].elWatcher(myDomEl.children[index])
+        })
       }
     })();
 

@@ -71,7 +71,8 @@
     this.parent = parent
     this.dataIds = []
     this.items = {
-      htmlAr: []
+      watcherAr: [],
+      htmlAr: [],
     }
     this.noItems = '<div class="projectListUser">project list: no items to display<div>'
     this.ready = new app.Atom('project_projectListUser_ready', 'boolean')
@@ -84,7 +85,23 @@
             ${this.items.htmlAr.length > 0 ? this.items.htmlAr.join('') : this.noItems}
           </div>`
       })
+      this.parent.watchEl('projectListUser', this.receiveMyDomEl.bind(this))
     }
+    this.receiveMyDomEl = function (domEl) {
+      console.log('projectListUser: my DOM el: %o', domEl)
+      this.domEl = domEl
+      for (let i = 0; i < domEl.childElementCount; ++i) {
+        if (!this.items.watcherAr[i]) {
+          throw new Error(`${mName}: projectListUser: no watcher for child ${i}`)
+        }
+        this.items.watcherAr[i](domEl.children[i])
+      }
+    }
+    this.watchEl = function(childId, handler) {
+      if (-1 === this.dataIds.indexOf(childId.split('_').pop())) return
+      const index = this.dataIds.indexOf(childId.split('_').pop())
+      this.items.watcherAr[index] = handler
+    },
     parent.ready.watch((parentReady) => {
       if (parentReady) {
         this.init()
@@ -121,17 +138,22 @@
       name: app.project.store.get(id).name || '',
       description: app.project.store.get(id).description || '',
     }
-    this.updateData = function (project) {
-      console.log(`${mName}: ProjectListReadItem ${id}: updateData(): ${JSON.stringify(project)}`)
-      item.name = project.name
-      item.description = project.description
+    this.actions = {
+      edit: () => {
+        console.log('projectListReadItem edit')
+      },
+      view: () => {
+        console.log('projectListReadItem view')
+      },
     }
-    app.project.store.watch(Object.assign({id:id}, item), this.updateData)
-    parent.ready.watch(parentReady => {
-      if (parentReady) {
-        parent.addItem({
-          id: `projectListReadItem_${id}`,
-          html: `
+    this.id = `projectListReadItem_${id}`
+    this.state = {
+      actions: {
+        edit: `app.action("${this.id}_edit")`,
+        view: `app.action("${this.id}_edit")`,
+      },
+      view: {
+        html: `
             <div class="projectListReadItem">
               <div>
                 ${item.name}
@@ -139,8 +161,43 @@
               <div>
                 ${item.description}
               </div>
-            </div>`
+              <button onclick='${this.state.actions.edit}'>Edit</button>
+            </div>`,
+      },
+      edit: {
+        html: `
+            <div class="projectListReadItem">
+              <div>
+                ${item.name}
+              </div>
+              <div>
+                ${item.description}
+              </div>
+              <button onclick='${this.state.actions.edit}'>Edit</button>
+            </div>`,
+      },
+    }
+    this.parent = parent
+    this.domEl = null
+    this.updateData = function (project) {
+      console.log(`${mName}: ProjectListReadItem ${id}: updateData(): ${JSON.stringify(project)}`)
+      item.name = project.name
+      item.description = project.description
+    }
+    this.receiveMyDomEl = function (domEl) {
+      console.log('projectListReadItem: my DOM el: %o', domEl)
+      this.domEl = domEl
+    }
+    app.project.store.watch(Object.assign({id:id}, item), this.updateData)
+    parent.ready.watch(parentReady => {
+      if (parentReady) {
+        parent.addItem({
+          id: this.id,
+          html: this.state.view.html
         })
+        this.parent.watchEl(`projectListReadItem_${id}`, this.receiveMyDomEl.bind(this))
+        app.registerAction(`${this.id}_edit`, this.actions.edit)
+        app.registerAction(`${this.id}_view`, this.actions.view)
       } else {
         // delete this object?
       }
