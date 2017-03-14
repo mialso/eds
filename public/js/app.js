@@ -20,6 +20,8 @@
 	}
 	const data = {
 	}
+  const dataWait = {
+  }
 	const app = glob.app
 	app.action = function (event, actionName) {
 		console.log(`app action: ${actionName}`)
@@ -37,15 +39,26 @@
 		if (payload) {
 			const atomName = name.split('_')[0]
 			data[atomName] = new app.Atom(atomName, 'string')
+      if (dataWait[atomName] && dataWait[atomName].length > 0) {
+        dataWait[atomName].forEach((watcher) => {
+          data[atomName].watch(watcher)
+        })
+        delete dataWait[atomName]
+      }
 		}
 		actions[name] = new app.Atom(name, 'number')
 		if (action) actions[name].actionWatch(action)
 	}
 	app.watchData = function (name, watcher) {
 		if (data[name] === undefined) {
-			throw new Error(`${mName}: watchData(): invalid name '${name}': no such data`)
+      if (dataWait[name] === undefined || !Array.isArray(dataWait[name])) {
+        dataWait[name] = []
+      }
+      dataWait[name].push(watcher)
+      return
+			//throw new Error(`${mName}: watchData(): invalid name '${name}': no such data`)
 		}
-		data[name].modelWatch(watcher)
+		data[name].watch(watcher)
 	}
 	app.watchAction = function (name, watcher) {
 		if (actions[name] === undefined) {

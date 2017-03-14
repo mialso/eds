@@ -54,7 +54,7 @@
     }
     this.get = function (projectId) {
       // TODO this not immutable
-      return data[projectId] || {}
+      return Object.assign({}, data[projectId] || {})
     },
     this.add = function (project) {
       if (!project.id) {
@@ -133,6 +133,12 @@
       }
       actionWatchers[action].push(handler)
     }
+    this.actionHTML = {
+      update: 'projectStore_udpate',
+    },
+    this.getHTMLAction = function (actionName) {
+      return this.actionHTML[actionName]
+    }
   }
 
   app.project.store = new ProjectStore()
@@ -142,6 +148,13 @@
     Object.assign(newProject, projectsData[projectId])
     console.log(`add to store: ${JSON.stringify(newProject)}`)
     app.project.store.add(newProject)
+    app.watchData(`projectName${projectId}`, getUpdateProjectName(projectId))
   })
+  function getUpdateProjectName (projectId) {
+    return (newName) => {
+      console.log(`${mName}: updateProjectName: ${projectId}:${newName}`)
+      app.project.store.update({id: projectId, name: newName})
+    }
+  }
   
 })(window, '<projectStore>');
