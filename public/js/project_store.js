@@ -39,6 +39,7 @@
       change: [],
     }
     const data = {}
+    const tmpData = {}
     Object.defineProperty(this, 'dataIds', {
       enumerable: false,
       configurable: false,
@@ -82,7 +83,22 @@
         handler(project.id)
       })
     }
-    this.update = function (project) {
+    this.tmpChange = function (project) {
+      if (!(project && project.id)) {
+        throw new Error(`${mName}: tmpChange(): no project or id provided: ${JSON.stringify(project)}`)
+      }
+      if (!data[project.id]) {
+        throw new Error(`${mName}: tmpChange(): no such project in store: ${data[project.id]}`)
+      }
+      tmpData[project.id] = {}
+      Object.keys(project).forEach(key => {
+        tmpData[project.id][key] = project[key]
+      })
+    }
+    this.getTmpData = function (projectId) {
+      return tmpData[projectId]
+    }
+    this.update = function (project, fromTmpData) {
       // TODO check for keys to be copyable, check for id to be present
       if (!data[project.id]) {
         throw new Error(`${mName}: update(): no such project in store: ${data[project.id]}`)
@@ -148,12 +164,23 @@
     Object.assign(newProject, projectsData[projectId])
     console.log(`add to store: ${JSON.stringify(newProject)}`)
     app.project.store.add(newProject)
-    app.watchData(`projectName${projectId}`, getUpdateProjectName(projectId))
+    app.watchData(`projectName${projectId}`, getChangeProjectName(projectId))
+    app.watchAction(`projectStore${projectId}_save`, getSaveProject(projectId))
   })
-  function getUpdateProjectName (projectId) {
+  function getSaveProject (projectId) {
+    return () => {
+      console.log(`${mName}: saveProject: ${projectId}`)
+      const dataToUpdate = app.project.store.getTmpData(projectId)
+      if (!dataToUpdate) {
+        throw new Error(`${mName}: saveProject(): no project in tmpData: ${projectId}`)
+      }
+      app.project.store.update(dataToUpdate)
+    }
+  }
+  function getChangeProjectName (projectId) {
     return (newName) => {
-      console.log(`${mName}: updateProjectName: ${projectId}:${newName}`)
-      app.project.store.update({id: projectId, name: newName})
+      console.log(`${mName}: changeProjectName: ${projectId}:${newName}`)
+      app.project.store.tmpChange({id: projectId, name: newName})
     }
   }
   

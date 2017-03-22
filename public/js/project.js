@@ -142,7 +142,7 @@
     this.id = `projectListReadItem_${id}`
     const actions = {
       changeNameHTML: `app.action(event, "projectName${item.id}_change")`,
-      saveHTML: `app.action(event, "projectStore_update")`,
+      saveHTML: `app.action(event, "projectStore${item.id}_save")`,
       editHTML: `app.action(event, "${this.id}_view")`,
       edit: () => {
         console.log('projectListReadItem edit')
@@ -155,45 +155,53 @@
       },
     }
     this.state = {
+      current: '',
       view: {
-        get html() {
-          //get: () => {
-            return `
-              <div>
-                ${item.name}
-              </div>
-              <div>
-                ${item.description}
-              </div>
-              <button onclick='${actions.editHTML}'>Edit</button>
-          `},
-        /*
-          set: () => {},
+        get name() {
+          return `${item.name}`
         },
-        */
+        get description() {
+          return `${item.description}`
+        },
+        get buttons() {
+          return `
+              <button onclick='${actions.editHTML}'>Edit</button>`
+        }
       },
       edit: {
-        get html() {
-          //get: () => {
-            return `
-                <div>
-                  <input type="text" value="${item.name}" onchange='${actions.changeNameHTML}'/>
-                </div>
-                <div>
-                  <input type="text" value="${item.description}" />
-                </div>
-                <button type="button" onclick='${actions.viewHTML}'>Cancel</button>
-                <button type="button" onclick='${actions.viewHTML}'>Save</button>
-            `},
-        /*
-          set: () => {},
-        },,
-        */
+        get name() {
+          return `
+            <input type="text" value="${item.name}" onchange='${actions.changeNameHTML}'/>`
+        },
+        get description() {
+          return `
+            <input type="text" value="${item.description}" />`
+        },
+        get buttons() {
+          return `
+            <button type="button" onclick='${actions.viewHTML}'>Cancel</button>
+            <button type="button" onclick='${actions.saveHTML}'>Save</button>`
+        }
       },
     }
     this.changeState = function (name) {
       console.log('change state %s: %o', name, this.domEl)
-      this.domEl.innerHTML = this.state[name].html
+      this.domEl.innerHTML = this.getHTML(name)
+      this.state.current = name
+    }
+    this.getHTML= function (stateName) {
+      return `
+        <div class="projectListReadItem">
+          <div>
+            ${this.state[stateName].name}
+          </div>
+          <div>
+            ${this.state[stateName].description}
+          </div>
+          <div>
+            ${this.state[stateName].buttons}
+          </div>
+        </div>`
     }
     this.parent = parent
     this.domEl = null
@@ -201,24 +209,24 @@
       console.log(`${mName}: ProjectListReadItem ${id}: updateData(): ${JSON.stringify(project)}`)
       if (project.name) item.name = project.name
       if (project.description) item.description = project.description
+      this.changeState('view')
     }
     this.receiveMyDomEl = function (domEl) {
       console.log('projectListReadItem: my DOM el: %o', domEl)
       this.domEl = domEl
+      this.state.current = 'view'
     }
-    app.project.store.watch(Object.assign({id:id}, item), this.updateData)
+    app.project.store.watch(Object.assign({id:id}, item), this.updateData.bind(this))
     parent.ready.watch(parentReady => {
       if (parentReady) {
         parent.addItem({
           id: this.id,
-          html: `
-            <div class="projectListReadItem">
-              ${this.state.view.html}
-            </div>`,
+          html: this.getHTML('view'),
         })
         this.parent.watchEl(`projectListReadItem_${id}`, this.receiveMyDomEl.bind(this))
         app.registerAction(`${this.id}_edit`, actions.edit)
         app.registerAction(`${this.id}_view`, actions.view)
+        app.registerAction(`projectStore${item.id}_save`, null, false)
         app.registerAction(`projectName${item.id}_change`, null, true)
       } else {
         // delete this object?

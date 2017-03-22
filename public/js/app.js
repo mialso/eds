@@ -18,6 +18,8 @@
 	// app user event creator
 	const actions = {
 	}
+  const actionWait = {
+  }
 	const data = {
 	}
   const dataWait = {
@@ -39,6 +41,7 @@
 		if (payload) {
 			const atomName = name.split('_')[0]
 			data[atomName] = new app.Atom(atomName, 'string')
+      // get before registered watchers if action registered after watcher
       if (dataWait[atomName] && dataWait[atomName].length > 0) {
         dataWait[atomName].forEach((watcher) => {
           data[atomName].watch(watcher)
@@ -48,8 +51,15 @@
 		}
 		actions[name] = new app.Atom(name, 'number')
 		if (action) actions[name].actionWatch(action)
+    if (actionWait[name] && actionWait[name].length > 0) {
+      actionWait[name].forEach((watcher) => {
+        actions[name].actionWatch(watcher)
+      })
+      delete actionWait[name]
+    }
 	}
 	app.watchData = function (name, watcher) {
+    // if action was not registered yet, wait for it
 		if (data[name] === undefined) {
       if (dataWait[name] === undefined || !Array.isArray(dataWait[name])) {
         dataWait[name] = []
@@ -62,7 +72,12 @@
 	}
 	app.watchAction = function (name, watcher) {
 		if (actions[name] === undefined) {
-			throw new Error(`${mName}: watchAction(): invalid name '${name}': no such action`)
+      if (actionWait[name] === undefined || !Array.isArray(actionWait[name])) {
+        actionWait[name] = []
+      }
+      actionWait[name].push(watcher)
+      return
+			//throw new Error(`${mName}: watchAction(): invalid name '${name}': no such action`)
 		}
 		actions[name].actionWatch(watcher)
 	}
