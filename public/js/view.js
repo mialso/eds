@@ -21,6 +21,7 @@
 			writable: false,
 			value: new glob.app.Atom('viewName', 'string'),
 		})
+    this.components = {}
 	}
 
 	glob.app.view = new View()

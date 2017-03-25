@@ -1,75 +1,15 @@
 ;(function(glob, mName) {
 
   const app = glob.app
-  app.project = new Project()
-  // data
-  let projectsData = {
-    'Mik': ['firstM', 'secondM', 'thirdM'],
-    'Jim': ['firstJ', 'secondJ', 'thirdJ'],
-  }
-  // watchers TODO app.user.store.watch({projectIds}, handler)
-  app.user.name.watch((userName) => {
-    // get projects avaliable for current user
-    console.log(`PPPPPPPPPPP: ${userName}`)
-    //app.project.data = projectsData[userName]
-    app.project.change(projectsData[userName])
-    console.log(`PPPPPPPPPPP: ${app.project.data}`)
-  })
 
-  const actions = {
-    add: [],
-    remove: [],
-    move: [],
-    change: [],
-  }
-
-  // model
-  function Project () {
-    this.userProjects = []  // the main question: to hold array of id's or whole data object
-    this.add = (newProject) => {
-      console.log(`${mName}: add: ${newProject}`)
-      actions.add.forEach(handler => {
-        handler(newProject)
-      })
-    }
-    this.remove = (projectId) => {
-      console.log(`${mName}: remove: ${projectId}`)
-      actions.remove.forEach(handler => {
-        handler(projectId)
-      })
-    }
-    this.move = (updatedProjectData) => {
-      console.log(`${mName}: update: ${updatedProjectData}`)
-      actions.move.forEach(handler => {
-        handler(updatedProjectData)
-      })
-    }
-    this.change = (newProjectData) => {
-      console.log(`${mName}: new: ${newProjectData}`)
-      if (!newProjectData) {
-        this.userProjects = []
-      } else {
-        this.userProjects = newProjectData
-      }
-      actions.change.forEach(handler => {
-        handler(this.userProjects)
-      })
-    }
-    this.watch = (action, watcher) => {
-      if (Object.keys(actions).indexOf(action) === -1) {
-        throw new Error(`${mName}: watch(): unavailable action: ${action}`)
-      }
-      actions[action].push(watcher)
-    }
-    this.component = {
-      ProjectListUser: ProjectListUser,
-    }
-  }
+  // TODO rename to app.store.project
+  const store = app.store.project
+  app.view.components.ProjectListUser = ProjectListUser
 
   // view, components
   function ProjectListUser (parent) {
-    this.parent = parent
     this.dataIds = []
+    this.parent = parent
     this.items = {
       watcherAr: [],
       htmlAr: [],
@@ -110,10 +50,20 @@
         this.ready.value = false
       }
     })
-    app.project.watch('change', (newData) => {
-      this.dataIds = newData
-      this.initChildren()
-    })
+    this.add = function (newDataIds) {
+      newDataIds.forEach((id) => {
+        this.dataIds.push(id)
+        this.items[id] = new ProjectItem(this, id)
+      })
+    }
+    this.remove = function (dataIds) {
+      dataIds.forEach((id) => {
+        const index = this.dataIds.indexOf(id)
+        if (-1 === index) return
+        this.dataIds.splice(index, 1) 
+        // TODO remove component
+      })
+    }
     this.addItem = function (item) {
       const projectId = item.id.split('_').pop()
       const index = this.dataIds.indexOf(projectId)
@@ -125,28 +75,16 @@
             <button>Remove ${projectId}</button>
           </div>
         </div>`
-      //console.log('XXXXXX: %s', this.items.htmlAr[index])
       console.log(`${mName}: ProjectListUser: add item: ${item.id} to index: ${index}`)
     }
-    this.initChildren = function () {
-      if (!(this.dataIds && Array.isArray(this.dataIds))) {
-        throw new Error(`${mName}: initChildren(): no dataIds: ${this.dataIds}`)
-      }
-      this.dataIds.forEach((id) => {
-        if (this.items[id]) return
-        this.items[id] = new ProjectItem(this, id)
-      })
-    }
-    if (app.project.userProjects.length > 0) {
-      this.dataIds = app.project.userProjects
-      this.initChildren()
-    }
+    store.select('currentUserIds', this.add.bind(this), this.remove.bind(this))
   }
+
   function ProjectItem (parent, id) {
     const item = {
       id: id,
-      name: app.project.store.get(id).name || '',
-      description: app.project.store.get(id).description || '',
+      name: app.store.project.get(id).name || '',
+      description: app.store.project.get(id).description || '',
     }
     this.id = `projectItem_${item.id}`
     const actions = {
@@ -232,7 +170,7 @@
       this.domEl = domEl
       this.state.current = 'view'
     }
-    app.project.store.watch(Object.assign({id:item.id}, item), this.updateData.bind(this))
+    app.store.project.watch(Object.assign({id:item.id}, item), this.updateData.bind(this))
     this.parent.ready.watch(parentReady => {
       if (parentReady) {
         this.parent.addItem({

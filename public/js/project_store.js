@@ -1,8 +1,10 @@
 ;(function(glob, mName) {
 
   const app = glob.app
-  if (!(app && app.project)) throw new Error(`${mName}: unable to run: no project global defined: ${app} && ${app.project}`)
+  if (!(app)) throw new Error(`${mName}: unable to run: no app global defined: ${app}`)
 
+  // TODO create global store with common functionality
+  app.store = {}
   // data
   let projectsData = {
     'firstM': {
@@ -30,31 +32,26 @@
       description: 'desc three J',
     },
   }
+  let usersData = {
+    'Mik': ['firstM', 'secondM', 'thirdM'],
+    'Jim': ['firstJ', 'secondJ', 'thirdJ'],
+  }
 
   function ProjectStore () {
     const watchers = {}
     const actionWatchers = {
+      // TODO add && remove: item does not care about this stuff, only change
       add: [],
       remove: [],
       change: [],
     }
     const data = {}
     const tmpData = {}
-    Object.defineProperty(this, 'dataIds', {
-      enumerable: false,
-      configurable: false,
-      get: function () {
-        return Object.keys(data)
-      },
-      set: function() {
-        throw new Error(`${mName}: unable to set dataIds`)
-      }
-    })
     this.getData = function () {
       return data
     }
     this.get = function (projectId) {
-      // TODO this not immutable
+      // TODO this is not immutable
       return Object.assign({}, data[projectId] || {})
     },
     this.add = function (project) {
@@ -149,40 +146,35 @@
       }
       actionWatchers[action].push(handler)
     }
-    /*
-    this.actionHTML = {
-      update: 'projectStore_udpate',
-    },
-    this.getHTMLAction = function (actionName) {
-      return this.actionHTML[actionName]
+    this.select = function (selectorName, addHandler, removeHandler) {
+      addHandler(usersData['Mik'])
     }
-    */
   }
 
-  app.project.store = new ProjectStore()
-  app.project.ProjectStore = ProjectStore
+  app.store.project = new ProjectStore()
+  app.store.ProjectStore = ProjectStore
   Object.keys(projectsData).forEach(projectId => {
     const newProject = {id: projectId}
     Object.assign(newProject, projectsData[projectId])
     console.log(`add to store: ${JSON.stringify(newProject)}`)
-    app.project.store.add(newProject)
+    app.store.project.add(newProject)
     app.watchData(`projectName${projectId}`, getChangeProjectName(projectId))
     app.watchAction(`projectStore${projectId}_save`, getSaveProject(projectId))
   })
   function getSaveProject (projectId) {
     return () => {
       console.log(`${mName}: saveProject: ${projectId}`)
-      const dataToUpdate = app.project.store.getTmpData(projectId)
+      const dataToUpdate = app.store.project.getTmpData(projectId)
       if (!dataToUpdate) {
         throw new Error(`${mName}: saveProject(): no project in tmpData: ${projectId}`)
       }
-      app.project.store.update(dataToUpdate)
+      app.store.project.update(dataToUpdate)
     }
   }
   function getChangeProjectName (projectId) {
     return (newName) => {
       console.log(`${mName}: changeProjectName: ${projectId}:${newName}`)
-      app.project.store.tmpChange({id: projectId, name: newName})
+      app.store.project.tmpChange({id: projectId, name: newName})
     }
   }
   

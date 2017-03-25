@@ -35,7 +35,7 @@
     }
   }
   const mainView = new MainView()
-  const projList = new app.project.component.ProjectListUser(mainView)
+  const projList = new app.view.components.ProjectListUser(mainView)
 
 	app.view.menu.content.viewWatch((newMenuContent) => {
 		if (app.user.role.value === 'guest') {
