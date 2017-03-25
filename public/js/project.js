@@ -94,7 +94,8 @@
         if (!this.items.watcherAr[i]) {
           throw new Error(`${mName}: projectListUser: no watcher for child ${i}`)
         }
-        this.items.watcherAr[i](domEl.children[i])
+        //console.log('XXXXXX: %o', domEl.children[i])
+        this.items.watcherAr[i](domEl.children[i].children[0])
       }
     }
     this.watchEl = function(childId, handler) {
@@ -114,9 +115,17 @@
       this.initChildren()
     })
     this.addItem = function (item) {
-      if (-1 === this.dataIds.indexOf(item.id.split('_').pop())) return
-      const index = this.dataIds.indexOf(item.id.split('_').pop())
-      this.items.htmlAr[index] = item.html
+      const projectId = item.id.split('_').pop()
+      const index = this.dataIds.indexOf(projectId)
+      if (-1 === index) return
+      this.items.htmlAr[index] = 
+        `<div class="ProjectListItem">
+          ${item.html}
+          <div class="ProjectListItemMenu">
+            <button>Remove ${projectId}</button>
+          </div>
+        </div>`
+      //console.log('XXXXXX: %s', this.items.htmlAr[index])
       console.log(`${mName}: ProjectListUser: add item: ${item.id} to index: ${index}`)
     }
     this.initChildren = function () {
@@ -125,7 +134,7 @@
       }
       this.dataIds.forEach((id) => {
         if (this.items[id]) return
-        this.items[id] = new ProjectListReadItem(this, id)
+        this.items[id] = new ProjectItem(this, id)
       })
     }
     if (app.project.userProjects.length > 0) {
@@ -133,24 +142,24 @@
       this.initChildren()
     }
   }
-  function ProjectListReadItem (parent, id) {
+  function ProjectItem (parent, id) {
     const item = {
       id: id,
       name: app.project.store.get(id).name || '',
       description: app.project.store.get(id).description || '',
     }
-    this.id = `projectListReadItem_${id}`
+    this.id = `projectItem_${item.id}`
     const actions = {
       changeNameHTML: `app.action(event, "projectName${item.id}_change")`,
       saveHTML: `app.action(event, "projectStore${item.id}_save")`,
       editHTML: `app.action(event, "${this.id}_view")`,
       edit: () => {
-        console.log('projectListReadItem edit')
+        console.log('projectItem edit')
         this.changeState('view')
       },
       viewHTML: `app.action(event, "${this.id}_edit")`,
       view: () => {
-        console.log('projectListReadItem view')
+        console.log('projectItem view')
         this.changeState('edit')
       },
     }
@@ -174,8 +183,11 @@
             <input type="text" value="${item.name}" onchange='${actions.changeNameHTML}'/>`
         },
         get description() {
+          return `${item.description}`
+          /*
           return `
             <input type="text" value="${item.description}" />`
+            */
         },
         get buttons() {
           return `
@@ -186,44 +198,48 @@
     }
     this.changeState = function (name) {
       console.log('change state %s: %o', name, this.domEl)
-      this.domEl.innerHTML = this.getHTML(name)
+      this.domEl.innerHTML = this.getInnerHTML(name)
       this.state.current = name
     }
     this.getHTML= function (stateName) {
       return `
-        <div class="projectListReadItem">
-          <div>
-            ${this.state[stateName].name}
-          </div>
-          <div>
-            ${this.state[stateName].description}
-          </div>
-          <div>
-            ${this.state[stateName].buttons}
-          </div>
+        <div class="projectItem">
+          ${this.getInnerHTML(stateName)}
+        </div>`
+    }
+    this.getInnerHTML = function (stateName) {
+      return `
+        <div>
+          ${this.state[stateName].name}
+        </div>
+        <div>
+          ${this.state[stateName].description}
+        </div>
+        <div>
+          ${this.state[stateName].buttons}
         </div>`
     }
     this.parent = parent
     this.domEl = null
     this.updateData = function (project) {
-      console.log(`${mName}: ProjectListReadItem ${id}: updateData(): ${JSON.stringify(project)}`)
+      console.log(`${mName}: ProjectItem ${item.id}: updateData(): ${JSON.stringify(project)}`)
       if (project.name) item.name = project.name
       if (project.description) item.description = project.description
       this.changeState('view')
     }
     this.receiveMyDomEl = function (domEl) {
-      console.log('projectListReadItem: my DOM el: %o', domEl)
+      console.log('%s: my DOM el: %o', this.id, domEl)
       this.domEl = domEl
       this.state.current = 'view'
     }
-    app.project.store.watch(Object.assign({id:id}, item), this.updateData.bind(this))
-    parent.ready.watch(parentReady => {
+    app.project.store.watch(Object.assign({id:item.id}, item), this.updateData.bind(this))
+    this.parent.ready.watch(parentReady => {
       if (parentReady) {
-        parent.addItem({
+        this.parent.addItem({
           id: this.id,
           html: this.getHTML('view'),
         })
-        this.parent.watchEl(`projectListReadItem_${id}`, this.receiveMyDomEl.bind(this))
+        this.parent.watchEl(`projectItem_${id}`, this.receiveMyDomEl.bind(this))
         app.registerAction(`${this.id}_edit`, actions.edit)
         app.registerAction(`${this.id}_view`, actions.view)
         app.registerAction(`projectStore${item.id}_save`, null, false)
@@ -232,8 +248,6 @@
         // delete this object?
       }
     })
-  }
-  function ProjectListEditItem (parent) {
   }
 
 })(window, '<projects>');

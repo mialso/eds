@@ -23,3 +23,11 @@
 	margin: 20px;
 	padding: 20px;
 }
+.ProjectListItem {
+  display: flex;
+}
+.ProjectListItemMenu {
+}
+.projectItem {
+  flex: 1;
+}

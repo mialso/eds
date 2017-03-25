@@ -128,7 +128,7 @@
     }
     this.watch = function (project, handler) {
       if (!watchers[project.id]) {
-        throw new Error(`${mName}: watch(): the watcher for ${project.id} is ${watchers[project.id]}`)
+        throw new Error(`${mName}: watch(): the watcher for ${project.id} is absent: ${watchers[project.id]}`)
       }
       Object.keys(project).forEach(projectKey => {
         if ('id' === projectKey) return
@@ -149,12 +149,14 @@
       }
       actionWatchers[action].push(handler)
     }
+    /*
     this.actionHTML = {
       update: 'projectStore_udpate',
     },
     this.getHTMLAction = function (actionName) {
       return this.actionHTML[actionName]
     }
+    */
   }
 
   app.project.store = new ProjectStore()
