@@ -39,12 +39,14 @@
 
   function ProjectStore () {
     const watchers = {}
+    /*
     const actionWatchers = {
       // TODO add && remove: item does not care about this stuff, only change
       add: [],
       remove: [],
       change: [],
     }
+    */
     const data = {}
     const tmpData = {}
     this.getData = function () {
@@ -76,9 +78,11 @@
         }
       })
       watchers[project.id] = {}
+      /*
       actionWatchers.add.forEach(handler => {
         handler(project.id)
       })
+      */
     }
     this.tmpChange = function (project) {
       if (!(project && project.id)) {
@@ -119,9 +123,11 @@
     this.remove = function (projectId) {
       delete data[projectId]
       delete watchers[projectId]
+      /*
       actionWatchers.remove.forEach(handler => {
         handler(projectId)
       })
+      */
     }
     this.watch = function (project, handler) {
       if (!watchers[project.id]) {
@@ -137,6 +143,7 @@
           watchers[project.id][projectKey].push(handler)
       })
     }
+    /*
     this.watchAction = function (action, handler) {
       if (!actionWatchers[action]) {
         throw new Error(`${mName}: watchAction(): unable to watch ${action}`)
@@ -146,6 +153,7 @@
       }
       actionWatchers[action].push(handler)
     }
+    */
     this.select = function (selectorName, addHandler, removeHandler) {
       addHandler(usersData['Mik'])
     }
