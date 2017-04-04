@@ -1,0 +1,21 @@
+{
+  "component": [
+    "should update itself when bounden(related) (data model)/(view model) changes",
+    "should remove itself & clean up when related data removed",
+    "should remove itself, children and clean up if parent have been removed",
+    "should associate itself with dom element, provided by parent",
+    "should update self-children dom elements when state changes"
+  ],
+  "container": [
+    "should update children elements when data array size changes",
+    "--should add new child within a wrapper if data array size increases",
+    "should move element when data array item(element) position changes",
+    "should remove element & wrapper when item is removed from data array",
+    "should associate itself with data items ids array when created",
+  ],
+  "element": [
+    "should update itself when one of data.properties changes",
+    "should remove itself (?from dom)/(clean up watchers) when container removes it",
+    "should associate itself with data item when created"
+  ]
+}

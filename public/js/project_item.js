@@ -76,7 +76,6 @@
       if (project.description) item.description = project.description
       this.changeState('view')
     }
-    store.watch({id:item.id, name: true, description: true}, this.updateData.bind(this))
     this.parent.ready.watch(parentReady => {
       if (parentReady) {
         this.parent.addItem({
@@ -86,12 +85,22 @@
               ${this.getInnerHTML()}
             </div>`,
         })
+        store.watch({id:item.id, name: true, description: true}, this.updateData.bind(this))
+        // internal actions
         app.registerAction(`${this.id}_edit`, actions.edit)
         app.registerAction(`${this.id}_view`, actions.view)
+        // external actions
         app.registerAction(`projectStore${item.id}_save`, null, false)
         app.registerAction(`projectName${item.id}_change`, null, true)
       } else {
-        // delete this object?
+        // TODO: delete && clean up
+        app.removeAction(`${this.id}_edit`)
+        app.removeAction(`${this.id}_view`)
+        app.removeAction(`projectStore${item.id}_save`)
+        app.removeAction(`projectName${item.id}_change`)
+        delete this._domEl
+        store.unWatch(item.id)
+        this.parentRemoveItem(this.id)
       }
     })
   }
